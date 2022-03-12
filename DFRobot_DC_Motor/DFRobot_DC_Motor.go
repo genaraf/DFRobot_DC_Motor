@@ -1,6 +1,8 @@
 package DFRobot_DC_Motor
 
 import (
+	"time"
+
 	i2c "github.com/d2r2/go-i2c"
 	logger "github.com/d2r2/go-logger"
 )
@@ -83,10 +85,10 @@ func checkBoard(i2cbus *i2c.I2C) bool {
 	return true
 }
 
-func New() *DFMotor {
+func New(addr byte) *DFMotor {
 	var drv DFMotor
 	var err error
-	drv.Addr = 0x10
+	drv.Addr = addr
 	var succesfull bool = false
 	drv.i2cbus, err = i2c.NewI2C(drv.Addr, 1)
 
@@ -181,6 +183,7 @@ func (drv *DFMotor) SetMoterPwmFrequency(frequency int) bool {
 		return false
 	}
 	lg.Debugf("set motors PWM:%d\n", frequency)
+	time.Sleep(100 * time.Millisecond)
 	return true
 }
 
@@ -208,10 +211,14 @@ func (drv *DFMotor) MotorMovement(id MotorId, direction Direction, speed float32
 		lg.Error(err)
 		return false
 	}
-	dirStr := "CCW"
-	if direction != CW {
+
+	var dirStr string
+	if direction == CW {
 		dirStr = "CW"
+	} else {
+		dirStr = "CCW"
 	}
+
 	lg.Debugf("M%d movement Dir:%s, Speed:%f\n", int(id), dirStr, speed)
 	return true
 }
@@ -228,19 +235,6 @@ func (drv *DFMotor) MotorStop(id MotorId) bool {
 	return true
 }
 
-func (drv *DFMotor) Detecte() []byte {
-	var addrList []byte
-	for addr := uint8(1); addr < 128; addr++ {
-		i2cbus, err := i2c.NewI2C(addr, 1)
-		if err == nil {
-			if checkBoard(i2cbus) {
-				addrList = append(addrList, addr)
-			}
-		}
-	}
-	return addrList
-}
-
 //  Set board controler address, reboot module to make it effective
 //  param address: byte    Address to set, range in 1 to 127
 func (drv *DFMotor) SetAddr(addr byte) bool {
@@ -255,4 +249,18 @@ func (drv *DFMotor) SetAddr(addr byte) bool {
 	}
 	lg.Debugf("new addfes:%02X\n", addr)
 	return true
+}
+
+func Detecte() []byte {
+	var addrList []byte
+	for addr := uint8(1); addr < 128; addr++ {
+		i2cbus, err := i2c.NewI2C(addr, 1)
+		if err == nil {
+			if checkBoard(i2cbus) {
+				addrList = append(addrList, addr)
+			}
+			i2cbus.Close()
+		}
+	}
+	return addrList
 }
