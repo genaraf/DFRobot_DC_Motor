@@ -19,10 +19,12 @@ func main() {
 	m.SetEncoderReductionRatio(motor.M2, 49)
 	for i := float32(10.0); i <= 100.0; i += 10.0 {
 		m.MotorMovement(motor.M1, motor.CW, i)
+		m.MotorMovement(motor.M2, motor.CCW, i)
 		time.Sleep(2 * time.Second)
 		s := m.GetEncoderSpeed(motor.M1)
 		fmt.Printf("M1 speed: %.2f, encoder speed:%d\n", i, s)
-
+		s = m.GetEncoderSpeed(motor.M2)
+		fmt.Printf("M2 speed: %.2f, encoder speed:%d\n", i, s)
 	}
 	m.MotorStop(motor.M1)
 	m.Close()

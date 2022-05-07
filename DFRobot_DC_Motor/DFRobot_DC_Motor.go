@@ -177,7 +177,7 @@ func (drv *DFMotor) SetMoterPwmFrequency(frequency int) bool {
 		lg.Error("frequency out of range: 100-12750")
 		return false
 	}
-	err := drv.i2cbus.WriteRegU8(_REG_CTRL_MODE, byte(frequency/50))
+	err := drv.i2cbus.WriteRegU8(_REG_MOTOR_PWM, byte(frequency/50))
 	if err != nil {
 		lg.Error(err)
 		return false
